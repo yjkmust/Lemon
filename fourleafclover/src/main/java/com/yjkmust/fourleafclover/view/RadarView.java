@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.SweepGradient;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -48,6 +49,8 @@ public class RadarView extends View {
     private Paint mRaindropPaint; //水滴的画笔
     //是否扫描
     private boolean isScan = false;
+    //扫描时的扫描旋转角度
+    private float mDegrees;
     //保存水滴数据
     private ArrayList<Raindrop> list = new ArrayList<>();
 
@@ -80,6 +83,14 @@ public class RadarView extends View {
         int cx = getWidth() / 2;
         int cy = getHeight() / 2;
         drawCircle(canvas,cx,cy,radius);
+        if (isShowCross){
+            drawCross(canvas,cx,cy,radius);
+        }
+        drawSweep(canvas, cx, cy, radius);
+        //计算雷达扫描的旋转角度
+        mDegrees = (mDegrees + (360 / mSpeed / 60)) % 360;
+        //触发View重新绘制，通过不断的绘制View的扫描动画效果
+        invalidate();
 
     }
     /**
@@ -173,6 +184,28 @@ public class RadarView extends View {
             canvas.drawCircle(cx, cy, radius - (radius / mCircleNum * i), mCirclePaint);
         }
     }
+    /**
+     * 画交叉线
+     */
+    private void drawCross(Canvas canvas, int cx, int cy, int radius){
+        canvas.drawLine(cx - radius, cy, cx + radius, cy, mCirclePaint);
+        canvas.drawLine(cx, cy - radius, cx, cy + radius, mCirclePaint);
+    }
+    /**
+     * 画扫描效果
+     */
+    private void drawSweep(Canvas canvas, int cx, int cy, int radius) {
+        //扇形的透明的渐变效果
+        SweepGradient sweepGradient = new SweepGradient(cx, cy,
+                new int[]{Color.TRANSPARENT, changeAlpha(mSweepColor, 0), changeAlpha(mSweepColor, 168),
+                        changeAlpha(mSweepColor, 255), changeAlpha(mSweepColor, 255)
+                }, new float[]{0.0f, 0.6f, 0.99f, 0.998f, 1f});
+        mSweepPaint.setShader(sweepGradient);
+        //先旋转画布，再绘制扫描的颜色渲染，实现扫描时的旋转效果。
+        canvas.rotate(-90+mDegrees, cx, cy);
+        canvas.drawCircle(cx, cy, radius, mSweepPaint);
+    }
+
 
 
     /**

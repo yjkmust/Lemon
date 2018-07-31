@@ -69,7 +69,7 @@ public class SplashDialog extends Dialog {
 
             @Override
             public void onFinishCount() {
-                dismiss();
+//                dismiss();
 
             }
         });

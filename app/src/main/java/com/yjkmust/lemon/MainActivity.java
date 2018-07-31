@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
         btnAdver = (Button) findViewById(R.id.btn_adver);
 
 
+
         btnAdver.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
