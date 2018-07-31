@@ -27,6 +27,10 @@
             app:text_size="10sp"
             app:background_color="@color/M8800000"
             app:count_down_time="5"/>
+        <com.yjkmust.fourleafclover.view.RadarView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"/>
     </RelativeLayout>
     <RelativeLayout
         android:layout_width="match_parent"
