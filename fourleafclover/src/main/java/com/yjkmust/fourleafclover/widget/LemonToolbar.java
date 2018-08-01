@@ -56,8 +56,8 @@ public class LemonToolbar extends Toolbar {
             TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.LemonToolbar);
             mMidTitleColor = typedArray.getColor(R.styleable.LemonToolbar_mid_title_color, DEFAULT_COLOR);
             mMidTitleSize = typedArray.getDimension(R.styleable.LemonToolbar_mid_title_text_size, MIDTITLESIZE);
-            mLeftPic = typedArray.getResourceId(R.styleable.LemonToolbar_left_pic, mLeftPic);
-            mRightPic = typedArray.getResourceId(R.styleable.LemonToolbar_right_pic, mRightPic);
+            mLeftPic = typedArray.getResourceId(R.styleable.LemonToolbar_left_pic, LEFT_DEFAULT_PIC);
+            mRightPic = typedArray.getResourceId(R.styleable.LemonToolbar_right_pic, RIGHT_DEFAULT_PIC);
             typedArray.recycle();
         }
         mMidTitle.setTextColor(mMidTitleColor);
