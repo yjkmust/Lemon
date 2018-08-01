@@ -11,14 +11,16 @@ import android.widget.Button;
 import com.yjkmust.fourleafclover.model.AdvertisingModel;
 import com.yjkmust.fourleafclover.model.CommonData;
 import com.yjkmust.fourleafclover.util.LiveDataBus;
+import com.yjkmust.fourleafclover.util.UiUtils;
 import com.yjkmust.fourleafclover.view.SplashDialog;
+import com.yjkmust.fourleafclover.widget.LemonToolbar;
 
 public class MainActivity extends AppCompatActivity {
 
     private Button btnAdver;
     private Button btnMessage;
     private SplashDialog splashDialog;
-    private int num = 1;
+    private LemonToolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
         initLiveDataBus();
         btnAdver = (Button) findViewById(R.id.btn_adver);
         btnMessage = (Button) findViewById(R.id.btn_message);
+        toolbar = (LemonToolbar) findViewById(R.id.toolbar);
+
         btnAdver.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -42,6 +46,18 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 AdvertisingModel model = new AdvertisingModel(1, "http://bmob-cdn-10899.b0.upaiyun.com/2017/05/09/34b6d85c406894f3803d949a78c4546e.jpg");
                 LiveDataBus.getDefault().post(CommonData.LIVEDATA_TEST).setValue(model);
+            }
+        });
+        toolbar.setLeftClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                UiUtils.makeText(MainActivity.this,"点击左边菜单");
+            }
+        });
+        toolbar.setRightClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                UiUtils.makeText(MainActivity.this,"点击右边菜单");
             }
         });
     }

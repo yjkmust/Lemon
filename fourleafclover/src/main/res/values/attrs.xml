@@ -30,4 +30,11 @@
         <!--水滴显示和消失的速度-->
         <attr name="flicker" format="float" />
     </declare-styleable>
+    <declare-styleable name="LemonToolbar">
+        <attr name="mid_title_color" format="color"/>
+        <attr name="mid_title_text_size" format="dimension"/>
+        <attr name="left_pic" format="reference"/>
+        <attr name="right_pic" format="reference"/>
+
+    </declare-styleable>
 </resources>

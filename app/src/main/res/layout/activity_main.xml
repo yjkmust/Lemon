@@ -6,21 +6,27 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.yjkmust.lemon.MainActivity">
+    <com.yjkmust.fourleafclover.widget.LemonToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:contentInsetStart="0dp"
+        android:background="@color/colorAccent"
+        app:mid_title_color="#00cc99"
+        app:mid_title_text_size="20sp"
+        app:left_pic="@drawable/icon_check_mark"
+        app:right_pic="@drawable/icon_morning">
+    </com.yjkmust.fourleafclover.widget.LemonToolbar>
 
     <Button
         android:id="@+id/btn_adver"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="广告页面"/>
+        android:text="广告页面"
+        android:textSize="20sp"/>
     <Button
         android:id="@+id/btn_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="liveData消息总线"/>
-
-    
-
-
-
-
 </LinearLayout>
