@@ -72,6 +72,7 @@ public class LemonToolbar extends Toolbar {
         mMidTitle = (TextView) findViewById(R.id.txt_mid_title);
         mRightTitle = (TextView) findViewById(R.id.txt_right_title);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //
     }
     //设置左边title文字颜色及图标
     private void setLeftTitle(String text,int color, int res){
