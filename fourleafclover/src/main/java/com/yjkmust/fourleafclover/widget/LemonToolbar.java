@@ -72,7 +72,6 @@ public class LemonToolbar extends Toolbar {
         mMidTitle = (TextView) findViewById(R.id.txt_mid_title);
         mRightTitle = (TextView) findViewById(R.id.txt_right_title);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //
     }
     //设置左边title文字颜色及图标
     private void setLeftTitle(String text,int color, int res){
@@ -131,10 +130,5 @@ public class LemonToolbar extends Toolbar {
     public void setRightClickListener(OnClickListener rightClickListener){
         mRightTitle.setOnClickListener(rightClickListener);
     }
-    public static int sp2px(Context context, float spValue) {
-        final float fontScale = context.getResources().getDisplayMetrics().scaledDensity;
-        return (int) (spValue * fontScale + 0.5f);
-    }
-
 
 }
