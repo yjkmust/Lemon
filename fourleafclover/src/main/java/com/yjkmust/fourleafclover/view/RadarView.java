@@ -14,6 +14,7 @@ import android.view.View;
 import com.yjkmust.fourleafclover.R;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by 11432 on 2018/7/31.
@@ -48,20 +49,20 @@ public class RadarView extends View {
     //水滴的画笔
     private Paint mRaindropPaint; //水滴的画笔
     //是否扫描
-    private boolean isScan = false;
+    private boolean isScan = true;
     //扫描时的扫描旋转角度
     private float mDegrees;
     //保存水滴数据
-    private ArrayList<Raindrop> list = new ArrayList<>();
+    private ArrayList<Raindrop> listRaindrop = new ArrayList<>();
 
     public RadarView(Context context) {
-        super(context,null);
+        super(context, null);
         init();
     }
 
     public RadarView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        getAttrs(context,attrs);
+        getAttrs(context, attrs);
         init();
     }
 
@@ -78,21 +79,28 @@ public class RadarView extends View {
         //计算圆的半径
         int width = getWidth() - getPaddingLeft() - getPaddingRight();
         int height = getHeight() - getPaddingTop() - getPaddingBottom();
-        int radius = Math.min(width, height)/2;
+        int radius = Math.min(width, height) / 2;
         //计算圆的圆心
         int cx = getWidth() / 2;
         int cy = getHeight() / 2;
-        drawCircle(canvas,cx,cy,radius);
-        if (isShowCross){
-            drawCross(canvas,cx,cy,radius);
+        drawCircle(canvas, cx, cy, radius);
+        if (isShowCross) {
+            drawCross(canvas, cx, cy, radius);
         }
-        drawSweep(canvas, cx, cy, radius);
-        //计算雷达扫描的旋转角度
-        mDegrees = (mDegrees + (360 / mSpeed / 60)) % 360;
-        //触发View重新绘制，通过不断的绘制View的扫描动画效果
-        invalidate();
+        if (isScan){
+            if (isShowRaindrop){
+                drawRaindrop(canvas,cx,cy,radius);
+            }
+            drawSweep(canvas, cx, cy, radius);
+            //计算雷达扫描的旋转角度
+            mDegrees = (mDegrees + (360 / mSpeed / 60)) % 360;
+            //触发View重新绘制，通过不断的绘制View的扫描动画效果
+            invalidate();
+        }
+
 
     }
+
     /**
      * 获取自定义属性值
      *
@@ -184,13 +192,15 @@ public class RadarView extends View {
             canvas.drawCircle(cx, cy, radius - (radius / mCircleNum * i), mCirclePaint);
         }
     }
+
     /**
      * 画交叉线
      */
-    private void drawCross(Canvas canvas, int cx, int cy, int radius){
+    private void drawCross(Canvas canvas, int cx, int cy, int radius) {
         canvas.drawLine(cx - radius, cy, cx + radius, cy, mCirclePaint);
         canvas.drawLine(cx, cy - radius, cx, cy + radius, mCirclePaint);
     }
+
     /**
      * 画扫描效果
      */
@@ -202,10 +212,23 @@ public class RadarView extends View {
                 }, new float[]{0.0f, 0.6f, 0.99f, 0.998f, 1f});
         mSweepPaint.setShader(sweepGradient);
         //先旋转画布，再绘制扫描的颜色渲染，实现扫描时的旋转效果。
-        canvas.rotate(-90+mDegrees, cx, cy);
+        canvas.rotate(-90 + mDegrees, cx, cy);
         canvas.drawCircle(cx, cy, radius, mSweepPaint);
     }
-
+    /**
+     * 画雨点（扫描中随机出现的点）
+     */
+    private void drawRaindrop(Canvas canvas, int cx, int cy, int radius){
+        generateRaindrop(cx, cy, radius);
+        for (Raindrop raindrop  : listRaindrop){
+            mRaindropPaint.setColor(raindrop.changeAlpha());
+            canvas.drawCircle(raindrop.x, raindrop.y, raindrop.radius, mRaindropPaint);
+            //水滴的扩散和透明的渐变效果
+            raindrop.radius += 1.0f * 20 / 60 / mFlicker;
+            raindrop.alpha -= 1.0f * 255 / 60 / mFlicker;
+        }
+        removeRaindrop();
+    }
 
 
     /**
@@ -233,8 +256,51 @@ public class RadarView extends View {
         public int changeAlpha() {
             return RadarView.changeAlpha(color, (int) alpha);
         }
-
     }
+
+    /**
+     * 水滴随机生成，并不是每次的调用都会生成一个水滴
+     */
+    private void generateRaindrop(int cx, int cy, int radius) {
+        if (listRaindrop.size() < mRaindropNum) {
+            //随机产生20以内的数字，如果这个数字是0，就产生一个水滴，控制水滴的生成概率
+            boolean probability = (int) (Math.random() * 20) == 0;
+            if (probability) {
+                int x = 0;
+                int y = 0;
+                int xOffset = (int) (Math.random() * (radius - 20));
+                int yOffset = (int) (Math.random() * (int) Math.sqrt(1.0 * (radius - 20) * (radius - 20) - xOffset * xOffset));
+
+                if ((int) (Math.random() * 2) == 0) {
+                    x = cx - xOffset;
+                } else {
+                    x = cx + xOffset;
+                }
+                if ((int) (Math.random() * 2) == 0) {
+                    y = cy - yOffset;
+                }else {
+                    y = cy + yOffset;
+                }
+                listRaindrop.add(new Raindrop(x, y, 0, mRainDropColor));
+
+            }
+
+        }
+    }
+    /**
+     * 删除雨滴
+     */
+    private void removeRaindrop(){
+        Iterator<Raindrop> iterator = listRaindrop.iterator();
+        while (iterator.hasNext()){
+            Raindrop raindrop = iterator.next();
+            if (raindrop.radius>20||raindrop.alpha<0){
+                iterator.remove();
+            }
+        }
+    }
+
+
 
     /**
      * a
@@ -257,5 +323,25 @@ public class RadarView extends View {
     private static int dp2px(Context context, float dpVal) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 dpVal, context.getResources().getDisplayMetrics());
+    }
+    /**
+     * 开始扫描
+     */
+    public void start() {
+        if (!isScan) {
+            isScan = true;
+            invalidate();
+        }
+    }
+
+    /**
+     * 停止扫描
+     */
+    public void stop() {
+        if (isScan) {
+            isScan = false;
+            listRaindrop.clear();
+            mDegrees = 0.0f;
+        }
     }
 }
