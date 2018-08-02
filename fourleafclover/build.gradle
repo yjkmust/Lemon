@@ -45,5 +45,12 @@ dependencies {
     annotationProcessor "android.arch.lifecycle:compiler:1.1.1"
     implementation "android.arch.lifecycle:common-java8:1.1.1"
 
+    implementation 'com.kk.taurus.playerbase:playerbase:3.2.8.1'
+    implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
+    implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
+    implementation 'com.google.android.exoplayer:exoplayer:r2.5.1'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'jp.wasabeef:recyclerview-animators:2.3.0'
+
 
 }
