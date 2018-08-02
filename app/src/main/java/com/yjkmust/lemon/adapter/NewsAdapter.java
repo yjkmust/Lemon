@@ -119,10 +119,10 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    class VideoHolder extends RecyclerView.ViewHolder {
+    public class VideoHolder extends RecyclerView.ViewHolder {
         TextView tittle;
         ImageView imageView;
-        FrameLayout container;
+        public FrameLayout container;
 
         public VideoHolder(View itemView) {
             super(itemView);

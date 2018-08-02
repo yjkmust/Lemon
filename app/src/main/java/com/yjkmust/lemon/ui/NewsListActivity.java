@@ -6,11 +6,15 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.kk.taurus.playerbase.event.OnPlayerEventListener;
 import com.kk.taurus.playerbase.receiver.OnReceiverEventListener;
 import com.yjkmust.fourleafclover.model.ViewAttr;
+import com.yjkmust.fourleafclover.util.UiUtils;
 import com.yjkmust.fourleafclover.videoplayer.play.AssistPlayer;
 import com.yjkmust.fourleafclover.videoplayer.play.DataInter;
 import com.yjkmust.lemon.R;
@@ -23,7 +27,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class NewsListActivity extends AppCompatActivity implements NewsAdapter.onVideoTitleClickListener,OnReceiverEventListener,OnPlayerEventListener{
+import static android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE;
+
+public class NewsListActivity extends AppCompatActivity implements NewsAdapter.onVideoTitleClickListener, OnReceiverEventListener, OnPlayerEventListener {
     @BindView(R.id.root)
     FrameLayout mRoot;
     @BindView(R.id.recycler)
@@ -31,6 +37,7 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
     private NewsAdapter mAdapter;
     private boolean isLandScape;
     private FrameLayout mFullContainer;
+    private boolean isShowVideoList;
     private List<NewsBean> mList = new ArrayList<>();
 
     @Override
@@ -46,7 +53,65 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
         AssistPlayer.get(getApplicationContext()).addOnPlayerEventListener(this);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
         mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                //滑动停止
+                if (newState == SCROLL_STATE_IDLE) {
+                    //滑动到屏幕中间开始
+                    LinearLayoutManager manger = (LinearLayoutManager) recyclerView.getLayoutManager();
+                    int first = manger.findFirstVisibleItemPosition();
+                    int last = manger.findLastVisibleItemPosition();
+                    for (int i = first; i <= last; i++) {
+                        if (!TextUtils.isEmpty(mList.get(i).getVideoUrl())){
+                            //列表视频 getChidAt只能到屏幕显示的item
+                            View view = recyclerView.getChildAt(i - first);
+                            FrameLayout container = view.findViewById(R.id.news_video_container);
+                            int location[] = new int[2];
+                            container.getLocationOnScreen(location);
+                            //y坐标包括状态栏所以要剪掉
+                            int top = location[1] - UiUtils.getStatusBarHeight(NewsListActivity.this);
+                            //获取y坐标，判断是否在屏幕中间
+                            int screenHeight = UiUtils.getScreenHeight(getApplicationContext());
+                            if (top>=screenHeight/2-UiUtils.dip2px(NewsListActivity.this,200)
+                                    &&top<=screenHeight+UiUtils.dip2px(NewsListActivity.this,200)
+                                    && !AssistPlayer.get(getApplicationContext()).isPlaying()){
+                                ImageView imageView = view.findViewById(R.id.news_video_image);
+                                imageView.performClick();//点击播放
+                                break;
+
+                            }
+
+                        }
+                    }
+                    //滑出屏幕高度一半停止播放
+                    int playPosition = mAdapter.getPlayPosition();
+                    if (playPosition!= -1){
+                        View view = recyclerView.getChildAt(playPosition - first);
+                        if (view != null){
+                            FrameLayout container = view.findViewById(R.id.news_video_container);
+                            int location[] = new int[2];
+                            container.getLocationOnScreen(location);
+                            int top = location[1] - UiUtils.getStatusBarHeight(getApplicationContext());
+                            if (top < UiUtils.dip2px(NewsListActivity.this, -100)
+                                    || top > UiUtils.getScreenHeight(NewsListActivity.this) - UiUtils.dip2px(NewsListActivity.this, 100)) {
+                                AssistPlayer.get(getApplicationContext()).stop();
+                                mAdapter.notifyItemRangeChanged(playPosition, 1);
+                                mAdapter.setPlayPosition(-1);
+                            }
+                        }
+                    }else {
+                        AssistPlayer.get(getApplicationContext()).stop();
+                        mAdapter.notifyItemRangeChanged(playPosition, 1);
+                        mAdapter.setPlayPosition(-1);
+                    }
+
+                }
+            }
+        });
     }
+
     private void initData() {
         for (int i = 0; i < 17; i++) {
             NewsBean bean = new NewsBean();
@@ -123,16 +188,16 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             attachFullScreen();
         } else {
-//            attachList();
+            attachList();
         }
         AssistPlayer.get(getApplicationContext()).getReceiverGroup().getGroupValue().putBoolean(DataInter.Key.KEY_IS_LANDSCAPE, isLandScape);
     }
 
     @Override
     public void onBackPressed() {
-        if (isLandScape){
+        if (isLandScape) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }else {
+        } else {
             super.onBackPressed();
         }
     }
@@ -140,10 +205,12 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mRecyclerView.clearOnScrollListeners();
         AssistPlayer.get(getApplicationContext()).removeReceiverEventListener(this);
         AssistPlayer.get(getApplicationContext()).removePlayerEventListener(this);
         AssistPlayer.get(getApplicationContext()).destroy();
     }
+
     //全屏
     private void attachFullScreen() {
         AssistPlayer.get(getApplicationContext()).getReceiverGroup().getGroupValue().putBoolean(DataInter.Key.KEY_CONTROLLER_TOP_ENABLE, true);
@@ -153,5 +220,24 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
         }
         mRoot.addView(mFullContainer, -1);
         AssistPlayer.get(getApplicationContext()).play(mFullContainer, null);
+    }
+
+    private void attachList() {
+        mRoot.removeView(mFullContainer);
+        AssistPlayer.get(getApplicationContext()).getReceiverGroup().getGroupValue().putBoolean(DataInter.Key.KEY_CONTROLLER_TOP_ENABLE, false);
+        if (isShowVideoList) {
+//            if (mFragment.isShowComment()) {
+//                //绑定回评论页面
+//                mFragment.attachCommentContainer();
+//            } else {
+//                //绑定回视频列表页面
+//                mFragment.attachList();
+//            }
+        } else {
+            if (mAdapter != null) {
+                NewsAdapter.VideoHolder holder = (NewsAdapter.VideoHolder) mRecyclerView.findViewHolderForLayoutPosition(mAdapter.getPlayPosition());
+                AssistPlayer.get(getApplicationContext()).play(holder.container, null);
+            }
+        }
     }
 }
