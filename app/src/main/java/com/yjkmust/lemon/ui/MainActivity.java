@@ -1,6 +1,7 @@
-package com.yjkmust.lemon;
+package com.yjkmust.lemon.ui;
 
 import android.arch.lifecycle.Observer;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -14,11 +15,13 @@ import com.yjkmust.fourleafclover.util.LiveDataBus;
 import com.yjkmust.fourleafclover.util.UiUtils;
 import com.yjkmust.fourleafclover.view.SplashDialog;
 import com.yjkmust.fourleafclover.widget.LemonToolbar;
+import com.yjkmust.lemon.R;
 
 public class MainActivity extends AppCompatActivity {
 
     private Button btnAdver;
     private Button btnMessage;
+    private Button btnNewsVideo;
     private SplashDialog splashDialog;
     private LemonToolbar toolbar;
 
@@ -29,7 +32,9 @@ public class MainActivity extends AppCompatActivity {
         initLiveDataBus();
         btnAdver = (Button) findViewById(R.id.btn_adver);
         btnMessage = (Button) findViewById(R.id.btn_message);
+        btnNewsVideo = (Button) findViewById(R.id.btn_news_video);
         toolbar = (LemonToolbar) findViewById(R.id.toolbar);
+
 
         btnAdver.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,6 +51,12 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 AdvertisingModel model = new AdvertisingModel(1, "http://bmob-cdn-10899.b0.upaiyun.com/2017/05/09/34b6d85c406894f3803d949a78c4546e.jpg");
                 LiveDataBus.getDefault().post(CommonData.LIVEDATA_TEST).setValue(model);
+            }
+        });
+        btnNewsVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, NewsListActivity.class));
             }
         });
         toolbar.setLeftClickListener(new View.OnClickListener() {
