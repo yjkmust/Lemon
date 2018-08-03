@@ -50,7 +50,7 @@ dependencies {
     implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
     implementation 'com.google.android.exoplayer:exoplayer:r2.5.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
-    implementation 'jp.wasabeef:recyclerview-animators:2.3.0'
+
 
 
 }

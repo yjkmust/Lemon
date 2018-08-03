@@ -19,6 +19,7 @@ import com.yjkmust.fourleafclover.videoplayer.play.AssistPlayer;
 import com.yjkmust.fourleafclover.videoplayer.play.DataInter;
 import com.yjkmust.lemon.R;
 import com.yjkmust.lemon.adapter.NewsAdapter;
+import com.yjkmust.lemon.fragment.VideoFragment;
 import com.yjkmust.lemon.model.NewsBean;
 
 import java.util.ArrayList;
@@ -37,7 +38,9 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
     private NewsAdapter mAdapter;
     private boolean isLandScape;
     private FrameLayout mFullContainer;
+    private VideoFragment videoFragment;
     private boolean isShowVideoList;
+    private int clickPosition;//点击跳转到视频列表的position
     private List<NewsBean> mList = new ArrayList<>();
 
     @Override
@@ -178,6 +181,21 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
 
     @Override
     public void onTitleClick(int position, ViewAttr attr) {
+        if (videoFragment == null){
+            videoFragment = new VideoFragment();
+        }
+        clickPosition = position;
+        isShowVideoList = true;
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("attr", attr);
+        bundle.putParcelable("news", mList.get(position));
+        bundle.putBoolean("isAttach", AssistPlayer.get(getApplicationContext()).isPlaying());
+        videoFragment.setArguments(bundle);
+        android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.root, videoFragment);
+        transaction.commit();
+
+
 
     }
 
