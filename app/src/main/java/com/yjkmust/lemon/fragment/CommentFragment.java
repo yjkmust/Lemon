@@ -68,6 +68,12 @@ public class CommentFragment extends android.support.v4.app.Fragment {
         View view = inflater.inflate(R.layout.fragment_comment, container, false);
         unbinder = ButterKnife.bind(this, view);
         initData();
+        mClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                closeFragment();
+            }
+        });
         return view;
     }
 
@@ -113,12 +119,12 @@ public class CommentFragment extends android.support.v4.app.Fragment {
                 mContainer.setScaleY(mAttr.getHeight() / (float) mContainer.getMeasuredHeight());
                 mRecyclerView.setAlpha(0);
                 mTextView.setAlpha(0);
-                mClose.setAlpha(0);
+//                mClose.setAlpha(0);
                 mCommentNum.setAlpha(0);
                 mContainer.animate().translationX(0).translationY(0).scaleX(1).scaleY(1).setDuration(DURATION);
                 mRecyclerView.animate().alpha(1).setDuration(DURATION);
                 mTextView.animate().alpha(1).setDuration(DURATION);
-                mClose.animate().alpha(1).setDuration(DURATION);
+//                mClose.animate().alpha(1).setDuration(DURATION);
                 mCommentNum.animate().alpha(1).setDuration(DURATION);
                 if (isPlay){
                     AssistPlayer.get(getContext()).play(mContainer, null);
@@ -132,5 +138,16 @@ public class CommentFragment extends android.support.v4.app.Fragment {
         });
 
 
+    }
+    public void closeFragment() {
+        mRecyclerView.animate().alpha(0).setDuration(DURATION);
+        mTextView.animate().alpha(0).setDuration(DURATION);
+        mClose.animate().alpha(0).setDuration(DURATION);
+        mCommentNum.animate().alpha(0).setDuration(DURATION);
+        mContainer.animate().translationY(mAttr.getY() - location[1]).setDuration(DURATION);
+        ObjectAnimator animator = ObjectAnimator.ofInt(mRoot, "backgroundColor", 0xff000000, 0x00000000);
+        animator.setEvaluator(new ArgbEvaluator());
+        animator.setDuration(DURATION);
+        animator.start();
     }
 }
