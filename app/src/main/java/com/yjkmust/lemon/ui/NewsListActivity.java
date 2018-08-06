@@ -3,6 +3,7 @@ package com.yjkmust.lemon.ui;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,7 +31,7 @@ import butterknife.ButterKnife;
 
 import static android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE;
 
-public class NewsListActivity extends AppCompatActivity implements NewsAdapter.onVideoTitleClickListener, OnReceiverEventListener, OnPlayerEventListener {
+public class NewsListActivity extends AppCompatActivity implements NewsAdapter.onVideoTitleClickListener, OnReceiverEventListener, OnPlayerEventListener, VideoFragment.onBackClickListener {
     @BindView(R.id.root)
     FrameLayout mRoot;
     @BindView(R.id.recycler)
@@ -67,7 +68,7 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
                     int first = manger.findFirstVisibleItemPosition();
                     int last = manger.findLastVisibleItemPosition();
                     for (int i = first; i <= last; i++) {
-                        if (!TextUtils.isEmpty(mList.get(i).getVideoUrl())){
+                        if (!TextUtils.isEmpty(mList.get(i).getVideoUrl())) {
                             //列表视频 getChidAt只能到屏幕显示的item
                             View view = recyclerView.getChildAt(i - first);
                             FrameLayout container = view.findViewById(R.id.news_video_container);
@@ -77,9 +78,9 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
                             int top = location[1] - UiUtils.getStatusBarHeight(NewsListActivity.this);
                             //获取y坐标，判断是否在屏幕中间
                             int screenHeight = UiUtils.getScreenHeight(getApplicationContext());
-                            if (top>=screenHeight/2-UiUtils.dip2px(NewsListActivity.this,200)
-                                    &&top<=screenHeight+UiUtils.dip2px(NewsListActivity.this,200)
-                                    && !AssistPlayer.get(getApplicationContext()).isPlaying()){
+                            if (top >= screenHeight / 2 - UiUtils.dip2px(NewsListActivity.this, 200)
+                                    && top <= screenHeight + UiUtils.dip2px(NewsListActivity.this, 200)
+                                    && !AssistPlayer.get(getApplicationContext()).isPlaying()) {
                                 ImageView imageView = view.findViewById(R.id.news_video_image);
                                 imageView.performClick();//点击播放
                                 break;
@@ -90,9 +91,9 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
                     }
                     //滑出屏幕高度一半停止播放
                     int playPosition = mAdapter.getPlayPosition();
-                    if (playPosition!= -1){
+                    if (playPosition != -1) {
                         View view = recyclerView.getChildAt(playPosition - first);
-                        if (view != null){
+                        if (view != null) {
                             FrameLayout container = view.findViewById(R.id.news_video_container);
                             int location[] = new int[2];
                             container.getLocationOnScreen(location);
@@ -104,7 +105,7 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
                                 mAdapter.setPlayPosition(-1);
                             }
                         }
-                    }else {
+                    } else {
                         AssistPlayer.get(getApplicationContext()).stop();
                         mAdapter.notifyItemRangeChanged(playPosition, 1);
                         mAdapter.setPlayPosition(-1);
@@ -181,8 +182,9 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
 
     @Override
     public void onTitleClick(int position, ViewAttr attr) {
-        if (videoFragment == null){
+        if (videoFragment == null) {
             videoFragment = new VideoFragment();
+            videoFragment.setOnBackClickListener(this);
         }
         clickPosition = position;
         isShowVideoList = true;
@@ -194,7 +196,6 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
         android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.root, videoFragment);
         transaction.commit();
-
 
 
     }
@@ -215,6 +216,14 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
     public void onBackPressed() {
         if (isLandScape) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } else if (isShowVideoList) {
+            //显示了视频列表
+            if (videoFragment.isShowComment) {
+                //显示了评论数据
+                videoFragment.closeCommentFragment();
+            } else {
+                removeVideoFragment();
+            }
         } else {
             super.onBackPressed();
         }
@@ -244,18 +253,40 @@ public class NewsListActivity extends AppCompatActivity implements NewsAdapter.o
         mRoot.removeView(mFullContainer);
         AssistPlayer.get(getApplicationContext()).getReceiverGroup().getGroupValue().putBoolean(DataInter.Key.KEY_CONTROLLER_TOP_ENABLE, false);
         if (isShowVideoList) {
-//            if (mFragment.isShowComment()) {
-//                //绑定回评论页面
-//                mFragment.attachCommentContainer();
-//            } else {
-//                //绑定回视频列表页面
-//                mFragment.attachList();
-//            }
+            if (videoFragment.isShowComment()) {
+                //绑定回评论页面
+                videoFragment.attachCommentContainer();
+            } else {
+                //绑定回视频列表页面
+                videoFragment.attachList();
+            }
         } else {
             if (mAdapter != null) {
                 NewsAdapter.VideoHolder holder = (NewsAdapter.VideoHolder) mRecyclerView.findViewHolderForLayoutPosition(mAdapter.getPlayPosition());
                 AssistPlayer.get(getApplicationContext()).play(holder.container, null);
             }
+        }
+    }
+
+    @Override
+    public void removeVideoFragment() {
+        isShowVideoList = false;
+        if (videoFragment.isPlayingFirst()) {
+            videoFragment.removeVideoList();
+            mRecyclerView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    transaction.remove(videoFragment);
+                    transaction.commit();
+                    NewsAdapter.VideoHolder holder = (NewsAdapter.VideoHolder) mRecyclerView.findViewHolderForLayoutPosition(clickPosition);
+                    AssistPlayer.get(getApplicationContext()).play(holder.container, null);
+                }
+            }, 800);
+        } else {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(videoFragment);
+            transaction.commit();
         }
     }
 }

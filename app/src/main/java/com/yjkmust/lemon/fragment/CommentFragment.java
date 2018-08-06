@@ -55,6 +55,7 @@ public class CommentFragment extends android.support.v4.app.Fragment {
     private boolean isPlay;
     public static final int DURATION = 550;
     private int[] location;
+    private onCloseClickListener listener;
 
 
     @Override
@@ -71,7 +72,9 @@ public class CommentFragment extends android.support.v4.app.Fragment {
         mClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                closeFragment();
+                if (listener!=null){
+                    listener.closeCommentFragment();
+                }
             }
         });
         return view;
@@ -150,4 +153,15 @@ public class CommentFragment extends android.support.v4.app.Fragment {
         animator.setDuration(DURATION);
         animator.start();
     }
+    public interface onCloseClickListener{
+        void closeCommentFragment();
+    }
+    public void setOnCloseClickListener(onCloseClickListener listener){
+        this.listener = listener;
+    }
+    public void attachContainer() {
+        AssistPlayer.get(getContext()).play(mContainer, null);
+    }
+
+
 }
